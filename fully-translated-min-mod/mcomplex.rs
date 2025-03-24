@@ -7,7 +7,7 @@
     unused_assignments,
     unused_mut
 )]
-extern "C" {
+unsafe extern "C" {
     fn cos(_: libc::c_double) -> libc::c_double;
     fn sin(_: libc::c_double) -> libc::c_double;
 }
@@ -18,7 +18,7 @@ pub struct complex_t {
     pub im: libc::c_double,
 }
 pub type complex = complex_t;
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub unsafe extern "C" fn conv_from_polar(
     mut r: libc::c_double,
     mut radians: libc::c_double,
@@ -28,14 +28,14 @@ pub unsafe extern "C" fn conv_from_polar(
     result.im = r * sin(radians);
     return result;
 }
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub unsafe extern "C" fn add(mut left: complex, mut right: complex) -> complex {
     let mut result: complex = complex_t { re: 0., im: 0. };
     result.re = left.re + right.re;
     result.im = left.im + right.im;
     return result;
 }
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub unsafe extern "C" fn multiply(mut left: complex, mut right: complex) -> complex {
     let mut result: complex = complex_t { re: 0., im: 0. };
     result.re = left.re * right.re - left.im * right.im;

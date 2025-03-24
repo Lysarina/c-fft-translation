@@ -1,4 +1,4 @@
-#include "fft.h"
+#include "rs_fft.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -31,8 +31,8 @@ int main(void) {
     }
     gettimeofday(&tvEnd, NULL);
 
-    // timeSubtract(&tvDiff, &tvEnd, &tvBegin);
-    // printf("%d x Naive: \t %ld.%ld\n", iter, tvDiff.tv_sec, tvDiff.tv_usec);
+    //timeSubtract(&tvDiff, &tvEnd, &tvBegin);
+    //printf("%d x Naive: \t %ld.%ld\n", iter, tvDiff.tv_sec, tvDiff.tv_usec);
     double elapsed = (tvEnd.tv_sec - tvBegin.tv_sec) + (tvEnd.tv_usec - tvBegin.tv_usec) / 1e6;
     printf("%d x Naive: \t %f\n", iter, elapsed);
     
@@ -62,3 +62,4 @@ int main(void) {
 
     return 0;
 }
+
