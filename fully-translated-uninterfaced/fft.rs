@@ -23,7 +23,7 @@ unsafe extern "C" {
 }
 
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn DFT_naive_external(
+pub unsafe extern "C" fn DFT_naive(
     mut x: *mut complex,
     mut N: i32,
 ) -> *mut complex {
@@ -34,14 +34,12 @@ pub unsafe extern "C" fn DFT_naive_external(
     for k in 0..N {
         for n in 0..N {
             // X[k as usize] = add(X[k as usize], multiply(x[n as usize], conv_from_polar(1., -2. * PI * n as f64 * k as f64/N as f64)))
-            *X.offset(
-                            k as isize,
-                        ) = add(
+            *X.offset(k as isize) = add(
                         *X.offset(k as isize),
                         multiply(
                             *x.offset(n as isize),
                             conv_from_polar(1., -2. * PI * n as f64 * k as f64/N as f64)
-                        ),
+                        )
                     );
         }
     }
@@ -50,7 +48,7 @@ pub unsafe extern "C" fn DFT_naive_external(
 
 //pub type complex = complex_t;
 #[unsafe(no_mangle)]
-pub fn DFT_naive(
+pub fn safe_DFT_naive(
     mut x: &Vec<complex>,
     mut N: i32,
 ) -> Vec<complex> {
@@ -144,7 +142,7 @@ pub unsafe extern "C" fn FFT_GoodThomas(
     //     z;
     // }
     for k1 in 0..N1 {
-        columns[k1 as usize] = DFT_naive(&columns[k1 as usize], N2);
+        columns[k1 as usize] = safe_DFT_naive(&columns[k1 as usize], N2);
     }
     // while k1 < N1 {
     //     let ref mut fresh2 = *columns.offset(k1 as isize);
@@ -172,7 +170,7 @@ pub unsafe extern "C" fn FFT_GoodThomas(
     //     k1;
     // }
     for k2 in 0..N2 {
-        rows[k2 as usize] = DFT_naive(&rows[k2 as usize], N1);
+        rows[k2 as usize] = safe_DFT_naive(&rows[k2 as usize], N1);
     }
     // k2 = 0 as i32;
     // while k2 < N2 {
@@ -295,7 +293,7 @@ pub unsafe extern "C" fn FFT_CooleyTukey(
     // }
 
     for k1 in 0..N1 {
-        columns[k1 as usize] = DFT_naive(&columns[k1 as usize], N2);
+        columns[k1 as usize] = safe_DFT_naive(&columns[k1 as usize], N2);
     }
     // k1 = 0 as i32;
     // while k1 < N1 {
@@ -337,7 +335,7 @@ pub unsafe extern "C" fn FFT_CooleyTukey(
     // }
 
     for k2 in 0..N2 {
-        rows[k2 as usize] = DFT_naive(&rows[k2 as usize], N1);
+        rows[k2 as usize] = safe_DFT_naive(&rows[k2 as usize], N1);
     }
 
     // k2 = 0 as i32;

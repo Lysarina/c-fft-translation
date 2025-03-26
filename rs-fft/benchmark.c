@@ -18,7 +18,7 @@ double get_time_diff(struct timeval *start, struct timeval *end) {
 int main(void) {
     struct timeval tvBegin, tvEnd, tvDiff;
     int iter = 100000;
-    int runs = 10;
+    int runs = 50;
 
     complex * input = (complex*) malloc(sizeof(struct complex_t) * 30);
     complex * result;

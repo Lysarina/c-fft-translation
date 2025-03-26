@@ -12,7 +12,7 @@ typedef struct complex_t {
 
 typedef struct complex_t complex;
 
-complex *DFT_naive_external(complex *x, int32_t N);
+complex *DFT_naive(complex *x, int32_t N);
 
 complex *FFT_CooleyTukey(complex *input, int32_t N, int32_t N1, int32_t N2);
 
