@@ -7,32 +7,39 @@
 
 mod mcomplex;
 use crate::mcomplex::complex;
+use crate::mcomplex::complex_t;
 use crate::mcomplex::conv_from_polar;
 use crate::mcomplex::add;
 use crate::mcomplex::multiply;
 
 use std::f64::consts::PI;
 
+unsafe extern "C" {
+    fn malloc(_: u64) -> *mut libc::c_void;
+}
+
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn DFT_naive(
     x: *mut complex,
     N: i32,
 ) -> *mut complex {
-    let mut X = vec![complex { re: 0., im: 0.}; N as usize];
+    let X: *mut complex = unsafe { malloc(
+            (::core::mem::size_of::<complex_t>() as u64)
+                .wrapping_mul(N as u64),
+        ) as *mut complex };
     for k in 0..N {
         for n in 0..N {
-            X[k as usize] = add(X[k as usize], multiply(
-                unsafe { *x.offset(n as isize) },
-                conv_from_polar(1., -2. * PI * n as f64 * k as f64/N as f64))
-            )
+            unsafe { *X.offset(k as isize) = add(
+                        *X.offset(k as isize),
+                        multiply(
+                            *x.offset(n as isize),
+                            conv_from_polar(1., -2. * PI * n as f64 * k as f64/N as f64)
+                        )
+                    ); 
+                }
         }
     }
-
-    let mut boxed_slice = X.into_boxed_slice();
-    let ptr = boxed_slice.as_mut_ptr();
-
-    std::mem::forget(boxed_slice);
-    ptr
+    X
 }
 
 #[unsafe(no_mangle)]
@@ -68,7 +75,7 @@ pub unsafe extern "C" fn FFT_GoodThomas(
     // here 30 is hardcoded from benchmark
     // we would actually need to do a runtime check for length, but since the C version
     // does not do it, we skip as well
-    for z in 0..30 {
+    for z in 0..30 { 
         k1 = z % N1;
         k2 = z % N2;
         columns[k1 as usize][k2 as usize] = unsafe { *input.offset(z as isize) };
@@ -88,19 +95,17 @@ pub unsafe extern "C" fn FFT_GoodThomas(
         rows[k2 as usize] = safe_DFT_naive(&rows[k2 as usize], N1);
     }
 
-    let mut output = vec![complex { re: 0., im: 0.}; N as usize];
+    let output: *mut complex = unsafe { malloc(
+        (::core::mem::size_of::<complex_t>() as u64)
+            .wrapping_mul(N as u64),
+    ) as *mut complex };
     for k1 in 0..N1 {
         for k2 in 0..N2 {
             z = N1*k2 + N2*k1;
-            output[(z%N) as usize] = rows[k2 as usize][k1 as usize];
+            unsafe { *output.offset((z % N) as isize) = rows[k2 as usize][k1 as usize]; }
         }
     }
-
-    let mut boxed_slice = output.into_boxed_slice();
-    let ptr = boxed_slice.as_mut_ptr();
-
-    std::mem::forget(boxed_slice);
-    ptr
+    output
 }
 
 #[unsafe(no_mangle)]
@@ -115,6 +120,7 @@ pub unsafe extern "C" fn FFT_CooleyTukey(
     let mut columns = vec![vec![complex { re: 0., im: 0.}; N2 as usize]; N1 as usize];
     // Inits rows: N2xN1 2D vector
     let mut rows = vec![vec![complex { re: 0., im: 0.}; N1 as usize]; N2 as usize];
+
 
     for k1 in 0..N1 {
         for k2 in 0..N2 {
@@ -139,15 +145,16 @@ pub unsafe extern "C" fn FFT_CooleyTukey(
         rows[k2 as usize] = safe_DFT_naive(&rows[k2 as usize], N1);
     }
 
-    let mut output = vec![complex { re: 0., im: 0.}; N as usize];
+    let output: *mut complex = unsafe { malloc(
+        (::core::mem::size_of::<complex_t>() as u64)
+            .wrapping_mul(N as u64),
+    ) as *mut complex };
+
     for k1 in 0..N1 {
         for k2 in 0..N2 {
-            output[(N2 * k1 + k2) as usize] = rows[k2 as usize][k1 as usize];
+            unsafe { *output.offset((N2 * k1 + k2) as isize) = rows[k2 as usize][k1 as usize]; }
         }
     }
-    let mut boxed_slice = output.into_boxed_slice();
-    let ptr = boxed_slice.as_mut_ptr();
-
-    std::mem::forget(boxed_slice);
-    ptr
+    
+    output
 }

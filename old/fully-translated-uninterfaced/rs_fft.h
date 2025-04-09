@@ -18,3 +18,4 @@ complex *FFT_CooleyTukey(complex *input, int32_t N, int32_t N1, int32_t N2);
 
 complex *FFT_GoodThomas(complex *input, int32_t N, int32_t N1, int32_t N2);
 
+extern void *malloc(uint64_t);

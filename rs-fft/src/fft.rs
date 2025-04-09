@@ -1,11 +1,8 @@
 #![allow(
-    dead_code,
-    mutable_transmutes,
     non_camel_case_types,
     non_snake_case,
     non_upper_case_globals,
-    unused_assignments,
-    unused_mut
+    clippy::missing_safety_doc
 )]
 
 mod mcomplex;
@@ -14,16 +11,12 @@ use crate::mcomplex::conv_from_polar;
 use crate::mcomplex::add;
 use crate::mcomplex::multiply;
 
-const PI: f64 = 3.1415926535897932384626434;
-
-unsafe extern "C" {
-    fn malloc(_: u64) -> *mut libc::c_void;
-}
+use std::f64::consts::PI;
 
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn DFT_naive(
-    mut x: *mut complex,
-    mut N: i32,
+    x: *mut complex,
+    N: i32,
 ) -> *mut complex {
     let mut X = vec![complex { re: 0., im: 0.}; N as usize];
     for k in 0..N {
@@ -39,13 +32,13 @@ pub unsafe extern "C" fn DFT_naive(
     let ptr = boxed_slice.as_mut_ptr();
 
     std::mem::forget(boxed_slice);
-    return ptr;
+    ptr
 }
 
 #[unsafe(no_mangle)]
 pub fn safe_DFT_naive(
-    mut x: &Vec<complex>,
-    mut N: i32,
+    x: &[complex],
+    N: i32,
 ) -> Vec<complex> {
     let mut X = vec![complex { re: 0., im: 0.}; N as usize];
     for k in 0..N {
@@ -53,29 +46,32 @@ pub fn safe_DFT_naive(
             X[k as usize] = add(X[k as usize], multiply(x[n as usize], conv_from_polar(1., -2. * PI * n as f64 * k as f64/N as f64)))
         }
     }
-    return X;
+    X
 }
 
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn FFT_GoodThomas(
-    mut input: *mut complex,
-    mut N: i32,
-    mut N1: i32,
-    mut N2: i32,
+    input: *mut complex,
+    N: i32,
+    N1: i32,
+    N2: i32,
 ) -> *mut complex {
-    let mut k1: i32 = 0;
-    let mut k2: i32 = 0;
-    let mut z: i32 = 0;
+    let mut k1: i32;
+    let mut k2: i32;
+    let mut z: i32;
 
     // Inits columns: N1xN2 2D vector
     let mut columns = vec![vec![complex { re: 0., im: 0.}; N2 as usize]; N1 as usize];
     // Inits rows: N2xN1 2D vector
     let mut rows = vec![vec![complex { re: 0., im: 0.}; N1 as usize]; N2 as usize];
 
-    for z in 0..30 { // here we would actually need to do a runtime check for length
+    // here 30 is hardcoded from benchmark
+    // we would actually need to do a runtime check for length, but since the C version
+    // does not do it, we skip as well
+    for z in 0..30 {
         k1 = z % N1;
         k2 = z % N2;
-        columns[k1 as usize][k2 as usize] = unsafe {*input.offset(z as isize)};
+        columns[k1 as usize][k2 as usize] = unsafe { *input.offset(z as isize) };
     }
 
     for k1 in 0..N1 {
@@ -104,15 +100,15 @@ pub unsafe extern "C" fn FFT_GoodThomas(
     let ptr = boxed_slice.as_mut_ptr();
 
     std::mem::forget(boxed_slice);
-    return ptr;
+    ptr
 }
 
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn FFT_CooleyTukey(
-    mut input: *mut complex,
-    mut N: i32,
-    mut N1: i32,
-    mut N2: i32,
+    input: *mut complex,
+    N: i32,
+    N1: i32,
+    N2: i32,
 ) -> *mut complex {
 
     // Inits columns: N1xN2 2D vector
@@ -122,7 +118,7 @@ pub unsafe extern "C" fn FFT_CooleyTukey(
 
     for k1 in 0..N1 {
         for k2 in 0..N2 {
-            columns[k1 as usize][k2 as usize] = unsafe{*input.offset((N1 * k2 + k1) as isize)}
+            columns[k1 as usize][k2 as usize] = unsafe { *input.offset((N1 * k2 + k1) as isize) };
         }
     }
 
@@ -153,5 +149,5 @@ pub unsafe extern "C" fn FFT_CooleyTukey(
     let ptr = boxed_slice.as_mut_ptr();
 
     std::mem::forget(boxed_slice);
-    return ptr;
+    ptr
 }
