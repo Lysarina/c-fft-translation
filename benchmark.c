@@ -34,8 +34,6 @@ int main(void) {
         }
         gettimeofday(&tvEnd, NULL);
         total_time_naive += get_time_diff(&tvBegin, &tvEnd);
-        // double elapsed = (tvEnd.tv_sec - tvBegin.tv_sec) + (tvEnd.tv_usec - tvBegin.tv_usec) / 1e6;
-        // printf("%d x Naive: \t %f\n", iter, elapsed);
 
         /* Cooley-Tukey */
         gettimeofday(&tvBegin, NULL);
@@ -44,8 +42,6 @@ int main(void) {
         }
         gettimeofday(&tvEnd, NULL);
         total_time_cooley_tukey += get_time_diff(&tvBegin, &tvEnd);
-        // elapsed = (tvEnd.tv_sec - tvBegin.tv_sec) + (tvEnd.tv_usec - tvBegin.tv_usec) / 1e6;
-        // printf("%d x Cooley-Tukey: \t %f\n", iter, elapsed);
 
         /* Good-Thomas */
         gettimeofday(&tvBegin, NULL);
@@ -54,8 +50,6 @@ int main(void) {
         }
         gettimeofday(&tvEnd, NULL);
         total_time_good_thomas += get_time_diff(&tvBegin, &tvEnd);
-        // elapsed = (tvEnd.tv_sec - tvBegin.tv_sec) + (tvEnd.tv_usec - tvBegin.tv_usec) / 1e6;
-        // printf("%d x Good-Thomas: \t %f\n", iter, elapsed);
     }
     
     printf("Naive DFT (Avg over %d runs): \t\t %f sec\n", runs, total_time_naive / runs);

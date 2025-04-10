@@ -4,7 +4,7 @@ from scipy import stats
 import matplotlib.pyplot as plt
 
 ffi = FFI()
-lib = ffi.dlopen('./rs-fft-benchmark.so')
+lib = ffi.dlopen('./rs-fft-benchmark-interfaced.so')
 ffi.cdef("""
     int get_runs();
     double** benchmark();
@@ -25,7 +25,7 @@ methods = ("Naive", "Cooley-Tukey", "Good-Thomas")
 for i in range(3):
     print(f"{methods[i]}\n")
     vals[i] = {}
-    vals[i] = [ptr[i][r] for r in range(40)]
+    vals[i] = [ptr[i][r] for r in range(runs)]
 
     mean = np.mean(vals[i])
     print(f"\tMean: {mean}\n")
@@ -34,7 +34,7 @@ for i in range(3):
     margin = sem * stats.t.ppf((1 + confidence) / 2.0, runs - 1)
     lower_bound = mean - margin
     upper_bound = mean + margin
-    print(f"\t{confidence*100:.1f}% confidence interval: ({lower_bound:.2f}, {upper_bound:.2f})")
+    print(f"\t{confidence*100:.1f}% confidence interval: ({lower_bound:.5f}, {upper_bound:.5f})")
 
     plt.figure()
     plt.plot(vals[i], marker='o')

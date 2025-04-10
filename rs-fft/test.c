@@ -66,8 +66,8 @@ int main(void) {
     }
     
 
-    free(result1);
-    free(result2);
+    // free(result1);
+    // free(result2);
     return 0;
 }
 
