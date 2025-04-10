@@ -5,11 +5,16 @@ import matplotlib.pyplot as plt
 
 runs = 30
 
+
+versions = ("c", "min-mod", "unsafe", "safer-return", "safer-input-and-return", "interfaced" )
+methods = ("naive", "cooley-tukey", "good-thomas")
+
+
 data = np.fromfile("output-safer-returns.bin", dtype=np.float64).reshape((3, runs))
 print(data)
 confidence = 0.95
 
-methods = ("Naive", "Cooley-Tukey", "Good-Thomas")
+
 
 # fig_shared, ax_shared = plt.subplots()
 

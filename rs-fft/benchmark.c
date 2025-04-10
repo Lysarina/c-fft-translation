@@ -18,9 +18,9 @@ double get_time_diff(struct timeval *start, struct timeval *end) {
 int main(void) {
     struct timeval tvBegin, tvEnd, tvDiff;
     // struct timespec start, end;
-    int iter = 100000;
+    int iter = 75000;
     int warmups = 10;
-    int runs = 30;
+    int runs = 40;
 
     complex * input = (complex*) malloc(sizeof(struct complex_t) * 30);
     complex * result;
@@ -90,7 +90,7 @@ int main(void) {
         // printf("%f\n", time);
     }
     
-    FILE *f = fopen("output-safer-returns.bin", "wb");
+    FILE *f = fopen("output-min-mod.bin", "wb");
     for (int i = 0; i < 3; i++) {
         fwrite(vals[i], sizeof(double), runs, f);
         free(vals[i]);
