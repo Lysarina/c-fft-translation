@@ -52,7 +52,7 @@ for r in range(len(methods)):
     if plot_side_by_side:
         plt.suptitle(f"{methods[r]}", fontsize=14)
     else: 
-        plt.title(f"Confidence Intervals for {methods[r]} FFT", fontsize=14)
+        # plt.title(f"Confidence Intervals for {methods[r]} FFT", fontsize=14)
         plt.xlabel('Version', fontsize=12)
         plt.ylabel('Time (s)', fontsize=12)
 
@@ -88,8 +88,9 @@ for r in range(len(methods)):
         plt.legend( title="Versions")
     # Set xticks to be the version indices
     plt.xticks(range(len(versions)), versions) #, rotation=45
+    plt.tight_layout()
     plt.savefig(f"figs/{methods[r].lower()}-conf-intervals.png")
 
-plt.tight_layout()
+
 
 plt.show()
