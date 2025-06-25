@@ -44,7 +44,7 @@ int main(void) {
             
         }
     }
-    FILE *f = fopen("cooley-tukey-output.bin", "wb");
+    FILE *f = fopen("perf-min-mod-cooley-tukey-output.bin", "wb");
     fwrite(vals, sizeof(double), runs, f);
     fclose(f);
 

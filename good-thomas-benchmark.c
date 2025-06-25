@@ -44,7 +44,7 @@ int main(void) {
             
         }
     }
-    FILE *f = fopen("good-thomas-output.bin", "wb");
+    FILE *f = fopen("perf-c-good-thomas-output.bin", "wb");
     fwrite(vals, sizeof(double), runs, f);
     fclose(f);
 

@@ -42,7 +42,6 @@ pub fn safe_DFT_naive(
     N: i32,
 ) -> Vec<complex> {
     let mut X = vec![complex { re: 0., im: 0.}; N as usize];
-
     for k in 0..N {
         for n in 0..N {
             X[k as usize] = add(X[k as usize], multiply(x[n as usize], conv_from_polar(1., -2. * PI * n as f64 * k as f64/N as f64)))
@@ -60,9 +59,12 @@ pub unsafe extern "C" fn FFT_GoodThomas(
 ) -> *mut complex {
     let mut k1: i32;
     let mut k2: i32;
+    let mut z: i32;
 
     // Inits columns: N1xN2 2D vector
     let mut columns = vec![vec![complex { re: 0., im: 0.}; N2 as usize]; N1 as usize];
+    // Inits rows: N2xN1 2D vector
+    let mut rows = vec![vec![complex { re: 0., im: 0.}; N1 as usize]; N2 as usize];
 
     let input_slice = unsafe { std::slice::from_raw_parts(input, N as usize) };
 
@@ -74,26 +76,6 @@ pub unsafe extern "C" fn FFT_GoodThomas(
         k2 = z % N2;
         columns[k1 as usize][k2 as usize] = input_slice[z as usize];
     }
-
-    let res = safe_FFT_GoodThomas(columns, N, N1, N2);
-    let mut boxed_slice = res.into_boxed_slice();
-    let ptr = boxed_slice.as_mut_ptr();
-
-    std::mem::forget(boxed_slice);
-    ptr
-}
-
-#[unsafe(no_mangle)]
-pub fn safe_FFT_GoodThomas(
-    mut columns: Vec<Vec<complex>>,
-    N: i32,
-    N1: i32,
-    N2: i32,
-) -> Vec<complex> {
-    let mut z: i32;
-
-    // Inits rows: N2xN1 2D vector
-    let mut rows = vec![vec![complex { re: 0., im: 0.}; N1 as usize]; N2 as usize];
 
     for k1 in 0..N1 {
         columns[k1 as usize] = safe_DFT_naive(&columns[k1 as usize], N2);
@@ -117,7 +99,11 @@ pub fn safe_FFT_GoodThomas(
         }
     }
 
-    output
+    let mut boxed_slice = output.into_boxed_slice();
+    let ptr = boxed_slice.as_mut_ptr();
+
+    std::mem::forget(boxed_slice);
+    ptr
 }
 
 #[unsafe(no_mangle)]
@@ -127,8 +113,11 @@ pub unsafe extern "C" fn FFT_CooleyTukey(
     N1: i32,
     N2: i32,
 ) -> *mut complex {
+
     // Inits columns: N1xN2 2D vector
     let mut columns = vec![vec![complex { re: 0., im: 0.}; N2 as usize]; N1 as usize];
+    // Inits rows: N2xN1 2D vector
+    let mut rows = vec![vec![complex { re: 0., im: 0.}; N1 as usize]; N2 as usize];
 
     let input_slice = unsafe { std::slice::from_raw_parts(input, N as usize) };
 
@@ -137,24 +126,6 @@ pub unsafe extern "C" fn FFT_CooleyTukey(
             columns[k1 as usize][k2 as usize] = input_slice[(N1 * k2 + k1) as usize];
         }
     }
-
-    let res = safe_FFT_CooleyTukey(columns, N, N1, N2);
-    let mut boxed_slice = res.into_boxed_slice();
-    let ptr = boxed_slice.as_mut_ptr();
-
-    std::mem::forget(boxed_slice);
-    ptr
-}
-
-#[unsafe(no_mangle)]
-pub fn safe_FFT_CooleyTukey(
-    mut columns: Vec<Vec<complex>>,
-    N: i32,
-    N1: i32,
-    N2: i32,
-) -> Vec<complex> {
-    // Inits rows: N2xN1 2D vector
-    let mut rows = vec![vec![complex { re: 0., im: 0.}; N1 as usize]; N2 as usize];
 
     for k1 in 0..N1 {
         columns[k1 as usize] = safe_DFT_naive(&columns[k1 as usize], N2);
@@ -179,6 +150,9 @@ pub fn safe_FFT_CooleyTukey(
             output[(N2 * k1 + k2) as usize] = rows[k2 as usize][k1 as usize];
         }
     }
+    let mut boxed_slice = output.into_boxed_slice();
+    let ptr = boxed_slice.as_mut_ptr();
 
-    output
+    std::mem::forget(boxed_slice);
+    ptr
 }

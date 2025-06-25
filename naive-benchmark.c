@@ -44,7 +44,7 @@ int main(void) {
             
         }
     }
-    FILE *f = fopen("naive-output.bin", "wb");
+    FILE *f = fopen("perf-c-naive-output.bin", "wb");
     fwrite(vals, sizeof(double), runs, f);
     fclose(f);
 
