@@ -8,13 +8,6 @@ double get_time_diff(struct timeval *start, struct timeval *end) {
     return (end->tv_sec - start->tv_sec) + (end->tv_usec - start->tv_usec) / 1e6;
 }
 
-// #include <time.h>
-
-// double get_time_diff(struct timespec *start, struct timespec *end) {
-//     return (end->tv_sec - start->tv_sec) + (end->tv_nsec - start->tv_nsec) / 1e9;
-// }
-
-
 int main(void) {
     struct timeval tvBegin, tvEnd, tvDiff;
     // struct timespec start, end;
@@ -96,7 +89,6 @@ int main(void) {
         free(vals[i]);
     }
     free(vals);
-    // fwrite(vals, sizeof(double), 3*runs, f);
     fclose(f);
 
     printf("Naive DFT (Avg over %d runs): \t\t %f sec\n", runs, total_time_naive / runs);
