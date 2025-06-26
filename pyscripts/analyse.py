@@ -20,29 +20,29 @@ plt.rcParams["axes.prop_cycle"] = plt.cycler('color', ["#004777", "#52243C", "#a
 
 custom_colors = ["#004777","#a30000","#ff7700","#efd28d","#00afb5"]
 
-versions = ["c", "min-mod", "rustlike"]
-prettified_versions = ["Original", "MinMod", "RustLike"]
+variants = ["c", "min-mod", "rustlike"]
+prettified_variants = ["Original", "MinMod", "RustLike"]
 methods = ("Naive", "Cooley-Tukey", "Good-Thomas")
 
 data = {}
 data_methods = [{}, {}] # 0 = all, 1 = original vs minmod
 
-for i in range(len(versions)):
+for i in range(len(variants)):
     data[i] = {}
     for r in range(len(methods)):
         if i == 0: 
             for k in range(2):
                 data_methods[k][r] = []
-        data[i][r] = np.fromfile(f"data/{versions[i]}-{methods[r].lower()}-output.bin", dtype=np.float64).reshape((runs))
+        data[i][r] = np.fromfile(f"data/{variants[i]}-{methods[r].lower()}-output.bin", dtype=np.float64).reshape((runs))
         data_methods[0][r].append(data[i][r])
         if i < 2:
             data_methods[1][r].append(data[i][r])
 if print_details: print(data_methods)
 
-## PLOT ALL VERSION-METHODS SEPARATELY
+## PLOT ALL variant-METHODS SEPARATELY
 
 if plot_independently:
-    for i in range(len(versions)):
+    for i in range(len(variants)):
         for r in range(len(methods)):
             print(f"\t{methods[r]}\n")
 
@@ -59,10 +59,10 @@ if plot_independently:
             plt.plot(data[i][r], marker='o', color=custom_colors[0])
             plt.xlabel('Run')
             plt.ylabel('Time (s)')
-            plt.savefig(f"figs/c-fft-{methods[r]}-{versions[i]}.png")
+            plt.savefig(f"figs/c-fft-{methods[r]}-{variants[i]}.png")
 
-# Reformat version names
-versions = prettified_versions
+# Reformat variant names
+variants = prettified_variants
 
 ## PLOT CONFIDENCE INTERVALS
 
@@ -75,11 +75,11 @@ plt.figure(figsize=(4, 5))
 plt.xlabel('Method', fontsize=12)
 plt.ylabel('Time (s)', fontsize=12)
 
-# Use a colormap to assign colors by version
+# Use a colormap to assign colors by variant
 color_map = plt.get_cmap('tab10')
 
 for r, method in enumerate(methods):
-    for i, version in enumerate(versions):
+    for i, variant in enumerate(variants):
         values = data[i][r]
         mean = np.mean(values)
         median = np.median(values)
@@ -87,7 +87,7 @@ for r, method in enumerate(methods):
         margin = sem * stats.t.ppf((1 + confidence) / 2.0, runs - 1)
 
         # Offset to avoid overlap
-        xpos = r + (i - (len(versions)-1)/2) * offset
+        xpos = r + (i - (len(variants)-1)/2) * offset
 
         eb = plt.errorbar(
             xpos,
@@ -114,16 +114,16 @@ method_handles = [
     for r in range(len(methods))
 ]
 
-version_handles = [
-    mlines.Line2D([], [], color='black', linestyle=line_styles[i], marker=markers[i], label=versions[i])
-    for i in range(len(versions))
+variant_handles = [
+    mlines.Line2D([], [], color='black', linestyle=line_styles[i], marker=markers[i], label=variants[i])
+    for i in range(len(variants))
 ]
 
 # Create both legends and place them side-by-side above the plot
 legend1 = plt.legend(handles=method_handles, title="Methods", loc='upper center',
                     bbox_to_anchor=(0.74, 1), ncol=1, frameon=True)
 
-legend2 = plt.legend(handles=version_handles, title="Versions", loc='upper center',
+legend2 = plt.legend(handles=variant_handles, title="Variants", loc='upper center',
                     bbox_to_anchor=(0.8, 0.775), ncol=1, frameon=True)
 
 # Add the first legend manually to keep both
@@ -135,23 +135,23 @@ plt.savefig(f"figs/all-conf-intervals.png")
 
 dunn_results = {}  # store Dunn test results here
 significant_pairs = {}  # stores significant group pairs per test
-performance_comparison = {}  # Store which version was faster per significant pair
+performance_comparison = {}  # Store which variant was faster per significant pair
 
 for k in range(2):
     if k == 0:
-        # Compare all versions
-        compcase = "--- All versions ---"
+        # Compare all variants
+        compcase = "--- All variants ---"
         savestr = "c-fft-perf-comparison"
     else:
         # Compare C vs minmod
         compcase = "--- C vs Minmod ---"
         savestr = "c-fft-c-vs-minmod-perf-comparison"
-        versions = ["Original", "MinMod"]
+        variants = ["Original", "MinMod"]
 
-    performance_comparison = {}  # Store which version was faster per significant pair
+    performance_comparison = {}  # Store which variant was faster per significant pair
     if print_details: print(compcase)
     for m, v in data_methods[k].items():
-        if (len(versions) == 2): 
+        if (len(variants) == 2): 
             u_stat, p_val = stats.mannwhitneyu(v[0], v[1], alternative='two-sided')
             if (p_val < alpha):
                 if print_details: print(f"{methods[m]}: F = {r.statistic}, p = {p_val}")
@@ -165,7 +165,7 @@ for k in range(2):
                 if print_details:
                     print(f"{methods[m]}: Mann-Whitney")
                     for a, b, p in pairwise_faster:
-                            print(f"\t{versions[a]} faster than {versions[b]}, p = {p:.8f}")
+                            print(f"\t{variants[a]} faster than {variants[b]}, p = {p:.8f}")
         else: 
             r = stats.kruskal(*v)
             if (r.pvalue < alpha):
@@ -203,10 +203,10 @@ for k in range(2):
                     print(f"{methods[m]}: Dunn")
                     print(dunn)
                     for a, b, p in pairwise_faster:
-                            print(f"\t{versions[a]} faster than {versions[b]}, p = {p:.8f}")
+                            print(f"\t{variants[a]} faster than {variants[b]}, p = {p:.8f}")
 
 
-    win_matrix = np.zeros((len(versions), len(versions)), dtype=int)
+    win_matrix = np.zeros((len(variants), len(variants)), dtype=int)
 
     # Count wins
     for results in performance_comparison.values():
@@ -218,9 +218,9 @@ for k in range(2):
     # Plot heatmap
     plt.figure(figsize=(6, 5))
     sns.heatmap(win_matrix, annot=True, fmt="d", cmap="Blues",
-                xticklabels=versions, yticklabels=versions)
-    plt.xlabel("Slower Version")
-    plt.ylabel("Faster Version")
+                xticklabels=variants, yticklabels=variants)
+    plt.xlabel("Slower variant")
+    plt.ylabel("Faster variant")
     plt.tight_layout()
     plt.savefig(f"figs/{savestr}.png")
 

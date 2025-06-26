@@ -61,8 +61,8 @@ int main(void) {
         printf("Strings match!\n");
     } else {
         printf("Strings do not match.\n");
-        // printf("Generated: \"%s\"\n", buffer);
-        // printf("File: \"%s\"\n", file_contents);
+        printf("Generated: \"%s\"\n", buffer);
+        printf("File: \"%s\"\n", file_contents);
     }
     
 
